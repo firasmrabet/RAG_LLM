@@ -1,0 +1,342 @@
+{
+  "name": "FallahTech RAG Cloud Collaboration with Ngrok API Integration",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "f4cdd120-6da6-47c1-a7b7-69068bdcf233",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://cherish-facile-wrongly.ngrok-free.dev/api/health",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "ngrok-skip-browser-warning",
+              "value": "true"
+            },
+            {
+              "name": "User-Agent",
+              "value": "n8n-agent/1.0"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 10000
+        }
+      },
+      "id": "9486546a-6291-4c09-8651-7dcfbdbc3ea0",
+      "name": "Check API Health",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        464,
+        304
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {},
+      "id": "9446f532-c2c0-4017-9daa-eb23713a33b2",
+      "name": "Combine Health & Documents",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        688,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://cherish-facile-wrongly.ngrok-free.dev/api/documents",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "ngrok-skip-browser-warning",
+              "value": "true"
+            },
+            {
+              "name": "User-Agent",
+              "value": "n8n-agent/1.0"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 10000
+        }
+      },
+      "id": "86570937-72d3-4b84-b7f1-464ad104943b",
+      "name": "Get Available Documents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        464,
+        496
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://cherish-facile-wrongly.ngrok-free.dev/api/webhook/analyze",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "ngrok-skip-browser-warning",
+              "value": "true"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "n8n-agent/1.0"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "7f951dd8-8829-4dea-bc2c-31136678bdc6",
+      "name": "RAG Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        912,
+        400
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => ({\n  json: {\n    success: item.json.rag_result?.success || false,\n    score: item.json.rag_result?.score || 0,\n    analysis: item.json.rag_result?.analysis || \"\",\n    question: item.json.rag_result?.question || \"\",\n    timestamp: new Date().toISOString(),\n    sources: item.json.rag_result?.sources || [],\n    debug: {\n      health: item.json.health_check,\n      documents: item.json.documents\n    }\n  }\n}));"
+      },
+      "id": "2db25c6d-cce1-4cb5-bdc0-18580cf582e7",
+      "name": "Format JSON Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "enableResponseOutput": true,
+        "options": {}
+      },
+      "id": "9c011796-7ecc-4fb4-9f4c-9cb433b02949",
+      "name": "Return Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1584,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "rag_result",
+              "value": "={{ $node[\"RAG Analysis\"].json }}",
+              "type": "object"
+            },
+            {
+              "id": "2",
+              "name": "health_check",
+              "value": "={{ $node[\"Check API Health\"].json }}",
+              "type": "object"
+            },
+            {
+              "id": "3",
+              "name": "documents",
+              "value": "={{ $node[\"Get Available Documents\"].json }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e21d2404-c46f-49db-8cb8-209cdb5f738c",
+      "name": "Debug RAG Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1136,
+        400
+      ]
+    }
+  ],
+  "pinData": {
+    "Manual Trigger": [
+      {
+        "json": {},
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check API Health",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Available Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check API Health": {
+      "main": [
+        [
+          {
+            "node": "Combine Health & Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Health & Documents": {
+      "main": [
+        [
+          {
+            "node": "RAG Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Available Documents": {
+      "main": [
+        [
+          {
+            "node": "Combine Health & Documents",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "RAG Analysis": {
+      "main": [
+        [
+          {
+            "node": "Debug RAG Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format JSON Response": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return Response": {
+      "main": [
+        []
+      ]
+    },
+    "Debug RAG Output": {
+      "main": [
+        [
+          {
+            "node": "Format JSON Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e2028b12-ccf9-4184-89a4-60fd9ed0823d",
+  "meta": {
+    "instanceId": "c6f03098adfe87940a557b73cfa158f18bf8b88066f94d844c66f7773dccb354"
+  },
+  "id": "zJEwsiGOKY6XUoVH",
+  "tags": []
+}
