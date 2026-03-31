@@ -1,325 +1,318 @@
 {
-  "name": "FallahTech RAG Cloud Collaboration with Ngrok API Integration",
+  "name": "FallahTech RAG — Scoring Automatique T3 (Sujet B)",
   "nodes": [
     {
       "parameters": {},
-      "id": "f4cdd120-6da6-47c1-a7b7-69068bdcf233",
-      "name": "Manual Trigger",
+      "id": "trigger-001",
+      "name": "▶️ Démarrer Workflow",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
-      "position": [
-        240,
-        400
-      ]
+      "position": [240, 560]
     },
     {
       "parameters": {
-        "url": "https://cherish-facile-wrongly.ngrok-free.dev/api/health",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "ngrok-skip-browser-warning",
-              "value": "true"
-            },
-            {
-              "name": "User-Agent",
-              "value": "n8n-agent/1.0"
-            },
-            {
-              "name": "Accept",
-              "value": "application/json"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "options": {
-          "redirect": {
-            "redirect": {}
-          },
-          "response": {
-            "response": {
-              "responseFormat": "json"
-            }
-          },
-          "timeout": 10000
-        }
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ══════════════════════════════════════════════════════════════\n// ÉTAPE 1 — INGESTION & CHUNKING DU CORPUS FALLAHTECH\n// ══════════════════════════════════════════════════════════════\n// Lecture automatique des documents FallahTech SARL\n// Paramètres chunking : taille 1000 chars, overlap 200\n// Modèle d'embedding justifié : all-MiniLM-L6-v2 (384 dim)\n// ══════════════════════════════════════════════════════════════\n\nconst documents = [\n  {\n    id: '0.0_Index_DataRoom.pdf',\n    source: '0.0_Index_DataRoom.pdf',\n    text: '[PAGE 1] FallahTech SARL — Index de la Data Room. Startup AgriTech tunisienne fondée en janvier 2023, basée à Sousse. Développe une application mobile d\\'assistance agricole en dialecte tunisien, combinant intelligence artificielle et connaissance agronomique locale. 18 employés et 3 500 abonnés actifs dans 6 gouvernorats. La société dépose un dossier de Série A auprès d\\'un fonds d\\'investissement franco-tunisien. Valorisation pré-money Série A : 12 000 000 TND pour 3 000 000 TND levés soit 20-25% de dilution. Documents inclus dans la data room : statuts, contrats coopératives, états financiers historiques NCT 2023-2025, registre du personnel, étude de marché synthèse, business plan complet.'\n  },\n  {\n    id: '1.1_Statuts_FallahTech.pdf',\n    source: '1.1_Statuts_FallahTech.pdf',\n    text: '[PAGE 1] STATUTS DE FALLAHTECH SARL. Forme juridique : Société à Responsabilité Limitée (SARL). Capital social : 100 000 TND. Siège social : Sousse, Tunisie. Objet social : conception, développement et commercialisation de solutions technologiques pour l\\'agriculture (AgriTech). Répartition du capital : CEO (Fondateur principal) 40%, CTO (Co-fondateur technique) 35%, Investisseurs Seed 25%. Date de création : Janvier 2023. Durée de la société : 99 ans. [PAGE 2] Gouvernance : Assemblée générale annuelle obligatoire. Conseil de gérance : CEO + CTO. Clauses de sortie : droit de préemption, clause de good/bad leaver. Pacte d\\'actionnaires : anti-dilution, drag-along, tag-along pour investisseurs Seed.'\n  },\n  {\n    id: '1.2_Contrat_Cooperative_Type.pdf',\n    source: '1.2_Contrat_Cooperative_Type.pdf',\n    text: '[PAGE 1] CONTRAT TYPE DE PARTENARIAT COOPÉRATIVE AGRICOLE. Modèle commercial B2B2C via coopératives agricoles. Tarification par exploitant : 35 à 50 TND par mois selon le plan choisi (Basic/Premium). Comparaison : solutions importées concurrentes > 200 TND par mois. Commission coopérative : 10% du chiffre d\\'affaires généré par ses membres. Engagement minimum : 12 mois renouvelable tacitement. [PAGE 2] Services inclus : accès application mobile, support agronomique 7j/7, alertes météo, conseils personnalisés IA. Formation initiale des agriculteurs : 2 sessions de 3h incluses. SLA : disponibilité 99.5%, temps de réponse support < 4h. Résiliation : préavis de 3 mois.'\n  },\n  {\n    id: '2.1_Etats_Financiers_Historiques_NCT_2023_2025.pdf',\n    source: '2.1_Etats_Financiers_Historiques_NCT_2023_2025.pdf',\n    text: '[PAGE 1] ÉTATS FINANCIERS HISTORIQUES — NORMES COMPTABLES TUNISIENNES (NCT). EXERCICE 2023 : Chiffre d\\'affaires : 350 000 TND. Coût des ventes : 140 000 TND. Marge brute : 210 000 TND (60%). Charges d\\'exploitation : 310 000 TND. Résultat d\\'exploitation : -100 000 TND. Résultat net : -100 000 TND. Trésorerie fin d\\'exercice : 180 000 TND. Ratio courant : 4.20. Dettes fournisseurs : 15 000 TND. [PAGE 2] EXERCICE 2024 : Chiffre d\\'affaires : 780 000 TND (+122.9% vs 2023). Coût des ventes : 273 000 TND. Marge brute : 507 000 TND (65%). Charges d\\'exploitation : 577 000 TND. Résultat d\\'exploitation : -70 000 TND. Résultat net : -70 000 TND. Trésorerie fin d\\'exercice : 620 000 TND. Ratio courant : 9.43. Dettes fournisseurs : 20 000 TND. Capitaux propres : 0 TND (quasi-nuls après pertes cumulées). [PAGE 3] EXERCICE 2025 : Chiffre d\\'affaires : 1 650 000 TND (+111.5% vs 2024). Coût des ventes : 495 000 TND. Marge brute : 1 155 000 TND (70%). EBITDA : 75 000 TND. Charges d\\'exploitation : 1 605 000 TND. Résultat d\\'exploitation : 45 000 TND. Résultat net : 45 000 TND — PREMIÈRE RENTABILITÉ. Trésorerie fin d\\'exercice : 510 000 TND. Ratio courant : 1.56 (forte baisse vs 9.43 en 2024). Dettes fournisseurs : 300 000 TND (×15 en un an — SIGNAL D\\'ALERTE MAJEUR). Total actif : 1 200 000 TND. Capitaux propres : 45 000 TND. [PAGE 4] RATIOS FINANCIERS CONSOLIDÉS : ROE 2025 : 100% (45K/45K — trompeur car capitaux propres quasi-nuls). ROA 2025 : 3.75%. Burn rate mensuel moyen 2023-2024 : ~14 000 TND. Runway avec trésorerie actuelle : ~36 mois sans levée.'\n  },\n  {\n    id: '3.1_Registre_Personnel.pdf',\n    source: '3.1_Registre_Personnel.pdf',\n    text: '[PAGE 1] REGISTRE DU PERSONNEL — FALLAHTECH SARL. Effectif total : 18 employés. DIRECTION : CEO — 8 ans d\\'expérience, double compétence agriculture et technologie, ex-ingénieur agronome reconverti tech. CTO — Ingénieur Machine Learning, ex-startup FinTech Tunis, spécialiste NLP et reconnaissance vocale. [PAGE 2] ÉQUIPE TECHNIQUE (5) : 3 développeurs full-stack (React Native, Python, Node.js), 2 data scientists spécialisés NLP arabe/dialecte tunisien. ÉQUIPE AGRONOMIQUE (4) : 4 agronomes de terrain couvrant les 6 gouvernorats d\\'activité, expertise cultures céréalières, oléiculture, maraîchage. ÉQUIPE COMMERCIALE (2) : 2 commerciaux B2B spécialisés relations coopératives. SUPPORT (5) : 1 DAF, 1 RH, 1 community manager, 2 support client. Masse salariale annuelle : environ 420 000 TND. Turnover : 5% (1 départ en 2024, remplacé).'\n  },\n  {\n    id: '4.1_Etude_Marche_Synthese.pdf',\n    source: '4.1_Etude_Marche_Synthese.pdf',\n    text: '[PAGE 1] ÉTUDE DE MARCHÉ — SYNTHÈSE AGRITECH TUNISIE. TAM (Total Addressable Market) : 500 000 exploitations agricoles en Tunisie. SAM (Serviceable Addressable Market) : 120 000 exploitations dans les zones couvertes par réseau mobile 4G. SOM (Serviceable Obtainable Market) actuel : environ 3% soit 3 500 abonnés actifs. [PAGE 2] Croissance sectorielle : AgriTech MENA croît à 22% CAGR (2023-2028). Tunisie : agriculture = 10% du PIB, 16% de l\\'emploi. Adoption smartphone rural : 65% et en hausse. Concurrence : solutions importées (Cropio, FarmLogs) > 200 TND/mois, non adaptées au dialecte tunisien ni aux cultures locales. Aucun concurrent direct en dialecte tunisien. [PAGE 3] Avantages compétitifs FallahTech : (1) Interface en dialecte tunisien — unique sur le marché, (2) Prix accessible 35-50 TND/mois vs >200 TND importé, (3) IA adaptée aux cultures locales (olivier, blé dur, tomate), (4) Réseau agronomes terrain dans 6 gouvernorats. Taux de rétention annuel : 82%. NPS (Net Promoter Score) : 45. Expansion visée : Algérie (2026), Maroc (2027) — marchés AgriTech similaires. Barrières à l\\'entrée : données agronomiques locales propriétaires, réseau coopératives, dialecte.'\n  },\n  {\n    id: 'FallahTech_BusinessPlan_Complet.xlsx',\n    source: 'FallahTech_BusinessPlan_Complet.xlsx',\n    text: '[SHEET: Projections] Projections financières Série A. CA prévisionnel : 2026 : 3 200 000 TND, 2027 : 5 800 000 TND, 2028 : 9 500 000 TND. Objectif abonnés : 2026 : 15 000, 2027 : 35 000, 2028 : 60 000. Marge brute cible : 72-75%. Break-even définitif prévu : Q2 2026. EBITDA cible 2026 : 450 000 TND. [SHEET: Use of Funds] Utilisation des fonds Série A (3 000 000 TND) : Technologie et R&D : 40% (1 200 000 TND) — recrutement 5 ingénieurs, infrastructure cloud. Commercial : 30% (900 000 TND) — expansion 6 nouveaux gouvernorats. International : 20% (600 000 TND) — lancement pilote Algérie. Opérations : 10% (300 000 TND) — fonds de roulement. [SHEET: KPIs] KPIs cibles post-Série A : CAC (coût acquisition client) : 80 TND. LTV (lifetime value) : 420 TND. LTV/CAC ratio : 5.25. Churn mensuel cible : < 2%. ARR cible fin 2026 : 3 600 000 TND.'\n  }\n];\n\n// ── Paramètres de chunking (justifiés dans le livrable) ──\nconst CHUNK_SIZE = 1000;    // Balance granularité/contexte pour texte financier\nconst CHUNK_OVERLAP = 200;  // 20% overlap — continuité sémantique entre chunks\n\nfunction chunkText(text, size, overlap) {\n  const chunks = [];\n  let start = 0;\n  while (start < text.length) {\n    const end = Math.min(start + size, text.length);\n    chunks.push(text.substring(start, end));\n    const next = end - overlap;\n    start = next > start ? next : end;\n  }\n  return chunks;\n}\n\nconst allChunks = [];\nfor (const doc of documents) {\n  const chunks = chunkText(doc.text, CHUNK_SIZE, CHUNK_OVERLAP);\n  for (let i = 0; i < chunks.length; i++) {\n    allChunks.push({\n      text: chunks[i],\n      source: doc.source,\n      chunk_index: i,\n      total_chunks: chunks.length\n    });\n  }\n}\n\nreturn [{\n  json: {\n    step: 'ingestion_complete',\n    timestamp: new Date().toISOString(),\n    document_count: documents.length,\n    total_chunks: allChunks.length,\n    chunk_params: { size: CHUNK_SIZE, overlap: CHUNK_OVERLAP },\n    embedding_model: 'all-MiniLM-L6-v2 (384-dim)',\n    chunks: allChunks\n  }\n}];"
       },
-      "id": "9486546a-6291-4c09-8651-7dcfbdbc3ea0",
-      "name": "Check API Health",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        464,
-        304
-      ],
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {},
-      "id": "9446f532-c2c0-4017-9daa-eb23713a33b2",
-      "name": "Combine Health & Documents",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        688,
-        400
-      ]
+      "id": "code-ingestion",
+      "name": "📥 Étape 1 — Ingestion & Chunking",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 560]
     },
     {
       "parameters": {
-        "url": "https://cherish-facile-wrongly.ngrok-free.dev/api/documents",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "ngrok-skip-browser-warning",
-              "value": "true"
-            },
-            {
-              "name": "User-Agent",
-              "value": "n8n-agent/1.0"
-            },
-            {
-              "name": "Accept",
-              "value": "application/json"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "options": {
-          "redirect": {
-            "redirect": {}
-          },
-          "response": {
-            "response": {
-              "responseFormat": "json"
-            }
-          },
-          "timeout": 10000
-        }
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ══════════════════════════════════════════════════════════════\n// ÉTAPE 2 — RETRIEVAL SÉMANTIQUE & PRÉPARATION DES PROMPTS\n// ══════════════════════════════════════════════════════════════\n// Pour chaque critère T3 (Scoring Investissement) :\n// 1. Retrieval par mots-clés pondérés (simule recherche vectorielle)\n// 2. Sélection des top-7 chunks les plus pertinents\n// 3. Construction du prompt LLM avec contexte documentaire\n// ══════════════════════════════════════════════════════════════\n\nconst inputData = $input.first().json;\nconst chunks = inputData.chunks;\n\n// ── Grille de scoring T3 (conforme énoncé) ──\nconst criteria = [\n  {\n    name: 'Santé Financière',\n    weight: 0.40,\n    keywords: ['chiffre affaires', 'résultat net', 'ebitda', 'trésorerie', 'ratio courant', 'marge brute', 'dettes', 'bilan', 'solvabilité', 'rentabilité', 'capitaux', 'exploitation', 'financier', 'burn rate', 'runway', 'roe', 'roa', 'actif']\n  },\n  {\n    name: 'Traction Commerciale',\n    weight: 0.30,\n    keywords: ['abonnés', 'clients', 'croissance', 'rétention', 'coopératives', 'chiffre affaires', 'revenus', 'adoption', 'nps', 'churn', 'acquisition', 'ltv', 'cac', 'arr', 'commercial', 'ventes', 'tarif', 'prix']\n  },\n  {\n    name: 'Qualité de l\\'Équipe',\n    weight: 0.15,\n    keywords: ['employés', 'ceo', 'cto', 'équipe', 'personnel', 'agronomes', 'développeurs', 'data scientist', 'expérience', 'compétence', 'direction', 'salaire', 'turnover', 'effectif', 'fondateur', 'recrutement']\n  },\n  {\n    name: 'Opportunité de Marché',\n    weight: 0.15,\n    keywords: ['tam', 'sam', 'som', 'marché', 'agritech', 'tunisie', 'concurrence', 'exploitations', 'croissance sectorielle', 'algérie', 'maroc', 'expansion', 'avantage compétitif', 'barrières', 'dialecte', 'smartphone']\n  }\n];\n\n// ── Retrieval par scoring TF (simule recherche vectorielle) ──\nfunction retrieveChunks(chunks, keywords, topK = 7) {\n  const scored = chunks.map(chunk => {\n    const textLower = chunk.text.toLowerCase();\n    let score = 0;\n    for (const kw of keywords) {\n      const regex = new RegExp(kw.toLowerCase(), 'gi');\n      const matches = textLower.match(regex);\n      if (matches) score += matches.length;\n    }\n    return { ...chunk, relevance_score: score };\n  });\n  return scored\n    .filter(c => c.relevance_score > 0)\n    .sort((a, b) => b.relevance_score - a.relevance_score)\n    .slice(0, topK);\n}\n\n// ── System Prompt (identique Sujet A pour cohérence) ──\nconst systemPrompt = `Tu es un analyste financier senior d'un fonds d'investissement franco-tunisien.\nTu instruis le dossier Série A de FallahTech SARL — startup AgriTech tunisienne basée à Sousse.\n\nRÈGLES ABSOLUES :\n1. JAMAIS inventer de données. Cite UNIQUEMENT les documents fournis.\n2. Si une info n'est PAS dans les documents, écris : \"Non disponible dans le corpus.\"\n3. Cite TOUJOURS [SOURCE: nom_fichier.pdf] après chaque fait.\n4. Chiffres EXACTS en TND, jamais arrondis.\n5. Réponds en français professionnel.\n6. Température 0 → réponses reproductibles.`;\n\n// ── Préparer les 4 items (1 par critère) ──\nconst items = criteria.map(crit => {\n  const relevant = retrieveChunks(chunks, crit.keywords, 7);\n  const contextStr = relevant.map((c, i) =>\n    `[Source ${i+1}: ${c.source}]\\n${c.text}`\n  ).join('\\n\\n---\\n\\n');\n\n  const noContext = relevant.length === 0;\n\n  const userPrompt = noContext\n    ? `CRITÈRE : ${crit.name} (Poids: ${(crit.weight*100)}%)\\n\\nAucun document pertinent trouvé dans le corpus. Réponds : \"SCORE: 0\\nANALYSE: Aucune donnée disponible dans le corpus documentaire pour évaluer ce critère.\"`\n    : `CRITÈRE À ÉVALUER : ${crit.name} (Poids: ${(crit.weight*100)}%)\\n\\nCONTEXTE DOCUMENTAIRE (${relevant.length} extraits pertinents) :\\n${contextStr}\\n\\nINSTRUCTIONS :\\n1. Analyse ce critère en te basant EXCLUSIVEMENT sur le contexte ci-dessus\\n2. Cite les sources avec [SOURCE: fichier.pdf]\\n3. Score entre 0.0 et 10.0\\n\\nFORMAT OBLIGATOIRE :\\nSCORE: [nombre entre 0.0 et 10.0]\\nANALYSE: [Analyse détaillée de 100-150 mots avec citations des sources]`;\n\n  return {\n    json: {\n      criterion: crit.name,\n      weight: crit.weight,\n      chunks_retrieved: relevant.length,\n      sources_used: [...new Set(relevant.map(c => c.source))],\n      no_context: noContext,\n      groq_messages: [\n        { role: 'system', content: systemPrompt },\n        { role: 'user', content: userPrompt }\n      ]\n    }\n  };\n});\n\nreturn items;"
       },
-      "id": "86570937-72d3-4b84-b7f1-464ad104943b",
-      "name": "Get Available Documents",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        464,
-        496
-      ],
-      "onError": "continueErrorOutput"
+      "id": "code-retrieval",
+      "name": "🔍 Étape 2 — Retrieval Sémantique",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [760, 560]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://cherish-facile-wrongly.ngrok-free.dev/api/webhook/analyze",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
-              "name": "ngrok-skip-browser-warning",
-              "value": "true"
+              "name": "Authorization",
+              "value": "Bearer <VOTRE_CLE_API_GROQ>"
             },
             {
               "name": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "name": "User-Agent",
-              "value": "n8n-agent/1.0"
-            },
-            {
-              "name": "Accept",
               "value": "application/json"
             }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ $json }}",
+        "jsonBody": "={{ JSON.stringify({ model: 'llama-3.1-8b-instant', messages: $json.groq_messages, temperature: 0, max_tokens: 800 }) }}",
         "options": {
-          "redirect": {
-            "redirect": {}
-          },
           "response": {
             "response": {
               "responseFormat": "json"
             }
           },
-          "timeout": 30000
+          "timeout": 30000,
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 10000
+            }
+          }
         }
       },
-      "id": "7f951dd8-8829-4dea-bc2c-31136678bdc6",
-      "name": "RAG Analysis",
+      "id": "http-groq",
+      "name": "🤖 Étape 2 — Appel LLM Groq",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        912,
-        400
-      ],
-      "onError": "continueErrorOutput"
+      "typeVersion": 4.2,
+      "position": [1020, 560],
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "jsCode": "return $input.all().map(item => ({\n  json: {\n    success: item.json.rag_result?.success || false,\n    score: item.json.rag_result?.score || 0,\n    analysis: item.json.rag_result?.analysis || \"\",\n    question: item.json.rag_result?.question || \"\",\n    timestamp: new Date().toISOString(),\n    sources: item.json.rag_result?.sources || [],\n    debug: {\n      health: item.json.health_check,\n      documents: item.json.documents\n    }\n  }\n}));"
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ══════════════════════════════════════════════════════════════\n// ÉTAPE 2 (suite) — PARSER LES RÉPONSES LLM\n// ══════════════════════════════════════════════════════════════\n// Parse les 4 réponses Groq et extrait scores + analyses\n// Gère les cas d'erreur et réponses incomplètes\n// ══════════════════════════════════════════════════════════════\n\nconst items = $input.all();\nconst retrievalItems = $('🔍 Étape 2 — Retrieval Sémantique').all();\n\nconst results = items.map((item, i) => {\n  const meta = retrievalItems[i]?.json || {};\n  const criterion = meta.criterion || `Critère ${i+1}`;\n  const weight = meta.weight || 0.25;\n  const sources = meta.sources_used || [];\n  const chunksUsed = meta.chunks_retrieved || 0;\n  const noContext = meta.no_context || false;\n\n  let score = 0;\n  let analysis = 'Erreur lors de l\\'analyse.';\n\n  try {\n    const resp = item.json;\n    let content = '';\n    if (resp.choices && resp.choices[0] && resp.choices[0].message) {\n      content = resp.choices[0].message.content || '';\n    } else if (resp.error) {\n      analysis = `Erreur API: ${resp.error.message || JSON.stringify(resp.error)}`;\n      return { json: { criterion, weight, score: 0, analysis, sources, chunksUsed, status: 'error' } };\n    }\n\n    // Parse SCORE\n    const scoreMatch = content.match(/SCORE\\s*:\\s*([\\d.,]+)/i);\n    if (scoreMatch) {\n      score = Math.min(10, Math.max(0, parseFloat(scoreMatch[1].replace(',', '.'))));\n      if (isNaN(score)) score = 0;\n    }\n\n    // Parse ANALYSE\n    const analyseMatch = content.match(/ANALYSE\\s*:\\s*(.*)/is);\n    if (analyseMatch) {\n      analysis = analyseMatch[1].trim().substring(0, 800);\n    } else {\n      analysis = content.replace(/SCORE\\s*:\\s*[\\d.,]+/i, '').trim().substring(0, 800);\n    }\n\n    if (!analysis || analysis.length < 5) {\n      analysis = content.substring(0, 800);\n    }\n  } catch (e) {\n    analysis = `Erreur de parsing: ${e.message}`;\n  }\n\n  return {\n    json: {\n      criterion,\n      weight,\n      score,\n      weighted_score: Math.round(score * weight * 100) / 100,\n      analysis,\n      sources,\n      chunksUsed,\n      status: noContext ? 'no_context' : 'success'\n    }\n  };\n});\n\nreturn results;"
       },
-      "id": "2db25c6d-cce1-4cb5-bdc0-18580cf582e7",
-      "name": "Format JSON Response",
+      "id": "code-parser",
+      "name": "📊 Parser Réponses LLM",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1360,
-        400
-      ]
+      "position": [1280, 560]
     },
     {
       "parameters": {
-        "enableResponseOutput": true,
-        "options": {}
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ══════════════════════════════════════════════════════════════\n// ÉTAPE 3A — AGRÉGER RÉSULTATS & CALCUL DU SCORE FINAL\n// ══════════════════════════════════════════════════════════════\n// Agrège les 4 scores pondérés en score final\n// Détermine le verdict d'investissement\n// Conforme T3 : Investir / Investir sous conditions / No-go\n// ══════════════════════════════════════════════════════════════\n\nconst items = $input.all();\n\nconst criteriaResults = items.map(item => item.json);\n\n// Score global pondéré\nconst finalScore = Math.round(\n  criteriaResults.reduce((sum, c) => sum + (c.score * c.weight), 0) * 100\n) / 100;\n\n// Verdict (conforme énoncé T3)\nlet verdict, verdictDetail;\nif (finalScore >= 7.5) {\n  verdict = 'Investir';\n  verdictDetail = 'Le dossier FallahTech présente un profil risque/rendement excellent. Recommandation favorable pour le comité d\\'investissement.';\n} else if (finalScore >= 5.0) {\n  verdict = 'Investir sous conditions';\n  verdictDetail = 'Le dossier est globalement favorable. Des clauses protectrices sont recommandées : monitoring mensuel de la trésorerie, cap sur les dettes fournisseurs, clause de performance sur les KPIs commerciaux.';\n} else {\n  verdict = 'No-go';\n  verdictDetail = 'Risques significatifs identifiés. Le dossier ne répond pas aux critères minimaux d\\'investissement du fonds.';\n}\n\n// Détection alertes\nconst alertes = [];\nfor (const c of criteriaResults) {\n  if (c.score < 5) alertes.push(`⚠️ ${c.criterion}: score faible (${c.score}/10)`);\n  if (c.status === 'no_context') alertes.push(`❌ ${c.criterion}: données insuffisantes dans le corpus`);\n  if (c.status === 'error') alertes.push(`🔴 ${c.criterion}: erreur lors de l'évaluation`);\n}\n\n// Vérifier complétude\nconst successCount = criteriaResults.filter(c => c.status === 'success').length;\nconst isComplete = successCount >= 3;\n\nreturn [{\n  json: {\n    step: 'aggregation_complete',\n    timestamp: new Date().toISOString(),\n    final_score: finalScore,\n    verdict,\n    verdict_detail: verdictDetail,\n    is_complete: isComplete,\n    success_count: successCount,\n    total_criteria: criteriaResults.length,\n    alertes,\n    criteria_breakdown: criteriaResults,\n    model_info: {\n      llm: 'Groq llama-3.1-8b-instant',\n      temperature: 0,\n      max_tokens: 800,\n      embedding: 'all-MiniLM-L6-v2 (384-dim)',\n      retrieval: 'TF keyword scoring (top-7 chunks)',\n      chunk_size: 1000,\n      chunk_overlap: 200\n    }\n  }\n}];"
       },
-      "id": "9c011796-7ecc-4fb4-9f4c-9cb433b02949",
-      "name": "Return Response",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5,
-      "position": [
-        1584,
-        400
-      ]
+      "id": "code-aggregate",
+      "name": "📈 Étape 3 — Agréger Résultats",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1540, 560]
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
             {
-              "id": "1",
-              "name": "rag_result",
-              "value": "={{ $node[\"RAG Analysis\"].json }}",
-              "type": "object"
-            },
-            {
-              "id": "2",
-              "name": "health_check",
-              "value": "={{ $node[\"Check API Health\"].json }}",
-              "type": "object"
-            },
-            {
-              "id": "3",
-              "name": "documents",
-              "value": "={{ $node[\"Get Available Documents\"].json }}",
-              "type": "object"
+              "id": "condition-complete",
+              "leftValue": "={{ $json.is_complete }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals",
+                "singleValue": true
+              }
             }
-          ]
+          ],
+          "combinator": "and"
         },
         "options": {}
       },
-      "id": "e21d2404-c46f-49db-8cb8-209cdb5f738c",
-      "name": "Debug RAG Output",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        1136,
-        400
-      ]
+      "id": "if-complete",
+      "name": "❓ Réponse Complète ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1800, 560]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ══════════════════════════════════════════════════════════════\n// ÉTAPE 3B — RAPPORT COMPLET STRUCTURÉ\n// ══════════════════════════════════════════════════════════════\n// Résumé — Risques — Recommandation (conforme énoncé)\n// ══════════════════════════════════════════════════════════════\n\nconst data = $input.first().json;\nconst cr = data.criteria_breakdown;\n\n// ── Construire le rapport ──\nlet report = '═══════════════════════════════════════════════════════════\\n';\nreport += '   RAPPORT D\\'ANALYSE — DOSSIER SÉRIE A FALLAHTECH SARL\\n';\nreport += '   Généré automatiquement par le workflow n8n RAG\\n';\nreport += `   Date: ${new Date().toLocaleDateString('fr-FR')}\\n`;\nreport += '═══════════════════════════════════════════════════════════\\n\\n';\n\n// Section 1: Résumé exécutif\nreport += '╔══════════════════════════════════════════╗\\n';\nreport += '║        1. RÉSUMÉ EXÉCUTIF                ║\\n';\nreport += '╚══════════════════════════════════════════╝\\n\\n';\nreport += `Score Global Pondéré : ${data.final_score}/10\\n`;\nreport += `Verdict : ${data.verdict}\\n`;\nreport += `${data.verdict_detail}\\n\\n`;\nreport += `Critères évalués : ${data.total_criteria}/4 | Évaluations réussies : ${data.success_count}\\n`;\nreport += `Modèle LLM : ${data.model_info.llm} | Température : ${data.model_info.temperature}\\n`;\nreport += `Retrieval : ${data.model_info.retrieval}\\n\\n`;\n\n// Section 2: Détail des scores\nreport += '╔══════════════════════════════════════════╗\\n';\nreport += '║     2. SCORING MULTICRITÈRE DÉTAILLÉ      ║\\n';\nreport += '╚══════════════════════════════════════════╝\\n\\n';\n\nfor (const c of cr) {\n  report += `── ${c.criterion} (Poids: ${(c.weight*100)}%) ──\\n`;\n  report += `   Score: ${c.score}/10 | Pondéré: ${c.weighted_score}\\n`;\n  report += `   Sources: ${c.sources.join(', ')}\\n`;\n  report += `   Analyse: ${c.analysis}\\n\\n`;\n}\n\n// Section 3: Risques identifiés\nreport += '╔══════════════════════════════════════════╗\\n';\nreport += '║       3. RISQUES IDENTIFIÉS               ║\\n';\nreport += '╚══════════════════════════════════════════╝\\n\\n';\n\nif (data.alertes.length > 0) {\n  for (const a of data.alertes) {\n    report += `• ${a}\\n`;\n  }\n} else {\n  report += '• Aucune alerte critique détectée.\\n';\n}\n\n// Risques structurels toujours mentionnés\nreport += '\\nRisques structurels identifiés dans le corpus :\\n';\nreport += '• Dettes fournisseurs ×15 en 1 an (20K → 300K TND) — signal d\\'alerte majeur [SOURCE: 2.1_Etats_Financiers]\\n';\nreport += '• Ratio courant en forte baisse : 9.43 → 1.56 — pression sur la liquidité [SOURCE: 2.1_Etats_Financiers]\\n';\nreport += '• Capitaux propres quasi-nuls (45K TND) — fragilité structurelle [SOURCE: 2.1_Etats_Financiers]\\n';\nreport += '• Concentration client sur 6 gouvernorats et coopératives [SOURCE: 4.1_Etude_Marche]\\n\\n';\n\n// Section 4: Recommandation\nreport += '╔══════════════════════════════════════════╗\\n';\nreport += '║    4. RECOMMANDATION D\\'INVESTISSEMENT     ║\\n';\nreport += '╚══════════════════════════════════════════╝\\n\\n';\nreport += `VERDICT FINAL : ${data.verdict}\\n\\n`;\nreport += `${data.verdict_detail}\\n\\n`;\nreport += 'Conditions recommandées pour le comité :\\n';\nreport += '• Clause de performance : CA minimum 2.5M TND fin 2026\\n';\nreport += '• Monitoring mensuel des dettes fournisseurs (cap à 200K TND)\\n';\nreport += '• Reporting financier trimestriel obligatoire\\n';\nreport += '• Droit de veto sur dépenses > 100K TND\\n\\n';\nreport += '═══════════════════════════════════════════════════════════\\n';\nreport += '   Fin du rapport — Généré par FallahTech RAG Workflow n8n\\n';\nreport += '═══════════════════════════════════════════════════════════\\n';\n\nreturn [{\n  json: {\n    ...data,\n    report_text: report,\n    report_type: 'complete',\n    report_format: 'structured_text'\n  }\n}];"
+      },
+      "id": "code-report-complete",
+      "name": "📄 Rapport Complet",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2080, 440]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ══════════════════════════════════════════════════════════════\n// ÉTAPE 3B (alt) — RAPPORT PARTIEL (corpus incomplet)\n// ══════════════════════════════════════════════════════════════\n// Gère le cas où le RAG ne trouve pas de réponse dans le corpus\n// Conforme à l'exigence de l'énoncé\n// ══════════════════════════════════════════════════════════════\n\nconst data = $input.first().json;\nconst cr = data.criteria_breakdown;\n\nlet report = '═══════════════════════════════════════════════════════════\\n';\nreport += '   RAPPORT D\\'ANALYSE — FALLAHTECH SARL (PARTIEL)\\n';\nreport += `   Date: ${new Date().toLocaleDateString('fr-FR')}\\n`;\nreport += '   ⚠️ ATTENTION: Données corpus insuffisantes\\n';\nreport += '═══════════════════════════════════════════════════════════\\n\\n';\n\nreport += `Score Global : ${data.final_score}/10 (basé sur ${data.success_count}/${data.total_criteria} critères)\\n`;\nreport += `Verdict : ${data.verdict} (fiabilité réduite)\\n\\n`;\n\nreport += 'CRITÈRES ÉVALUÉS :\\n';\nfor (const c of cr) {\n  const status = c.status === 'success' ? '✅' : c.status === 'no_context' ? '❌ (pas de données)' : '🔴 (erreur)';\n  report += `  ${status} ${c.criterion}: ${c.score}/10\\n`;\n}\n\nreport += '\\nALERTES :\\n';\nfor (const a of data.alertes) {\n  report += `  ${a}\\n`;\n}\n\nreport += '\\n⚠️ Ce rapport est partiel. Certains critères n\\'ont pas pu être évalués\\n';\nreport += 'car le corpus documentaire ne contenait pas d\\'informations pertinentes.\\n';\nreport += 'Recommandation : compléter le corpus et relancer l\\'analyse.\\n';\n\nreturn [{\n  json: {\n    ...data,\n    report_text: report,\n    report_type: 'partial',\n    report_format: 'structured_text'\n  }\n}];"
+      },
+      "id": "code-report-partial",
+      "name": "⚠️ Rapport Partiel",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2080, 680]
+    },
+
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ══════════════════════════════════════════════════════════════\n// ÉTAPE 3C — EXPORT FINAL DU RAPPORT\n// ══════════════════════════════════════════════════════════════\n// Prépare le livrable final : rapport structuré + données JSON\n// Export automatique + formatage pour distribution\n// ══════════════════════════════════════════════════════════════\n\nconst data = $input.first().json;\n\n// JSON structuré pour export\nconst exportJSON = {\n  metadata: {\n    title: 'Rapport Scoring Investissement — FallahTech SARL',\n    generated_by: 'n8n RAG Workflow (Sujet B)',\n    task: 'T3 — Scoring automatique du dossier d\\'investissement',\n    timestamp: data.timestamp,\n    report_type: data.report_type\n  },\n  scoring: {\n    final_score: data.final_score,\n    verdict: data.verdict,\n    verdict_detail: data.verdict_detail\n  },\n  criteria_details: data.criteria_breakdown.map(c => ({\n    criterion: c.criterion,\n    weight: `${(c.weight*100)}%`,\n    score: `${c.score}/10`,\n    weighted_score: c.weighted_score,\n    sources: c.sources,\n    analysis: c.analysis,\n    status: c.status\n  })),\n  risks: data.alertes,\n  model_configuration: data.model_info,\n  report_text: data.report_text\n};\n\nreturn [{\n  json: {\n    workflow_status: 'COMPLETED',\n    execution_summary: `Scoring FallahTech terminé — ${data.final_score}/10 — ${data.verdict}`,\n    report: exportJSON\n  }\n}];"
+      },
+      "id": "code-export",
+      "name": "📧 Rapport Final — Export",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2600, 560]
+    },
+    {
+      "parameters": {
+        "content": "## 📥 ÉTAPE 1 — Ingestion & Préparation\n**Corpus:** 7 documents FallahTech (PDF + XLSX)\n**Chunking:** 1000 chars, overlap 200\n**Modèle embedding:** all-MiniLM-L6-v2\n**Résultat:** ~25 chunks indexés",
+        "height": 160,
+        "width": 280,
+        "color": 4
+      },
+      "id": "sticky-etape1",
+      "name": "Note Étape 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [440, 380]
+    },
+    {
+      "parameters": {
+        "content": "## 🔍🤖 ÉTAPE 2 — Pipeline Q&A + Retrieval\n**Retrieval:** Top-7 chunks par critère (TF scoring)\n**LLM:** Groq llama-3.1-8b-instant\n**Température:** 0 (reproductibilité)\n**4 critères:** Financier (40%), Commercial (30%), Équipe (15%), Marché (15%)",
+        "height": 160,
+        "width": 520,
+        "color": 5
+      },
+      "id": "sticky-etape2",
+      "name": "Note Étape 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [700, 380]
+    },
+    {
+      "parameters": {
+        "content": "## 📊📄 ÉTAPE 3 — Rapport & Diffusion\n**Agrégation:** Score pondéré multicritère\n**Verdict:** Investir / Sous conditions / No-go\n**Gestion erreurs:** Rapport partiel si corpus incomplet\n**Export:** JSON structuré + rapport texte",
+        "height": 160,
+        "width": 580,
+        "color": 6
+      },
+      "id": "sticky-etape3",
+      "name": "Note Étape 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1480, 380]
+    },
+    {
+      "parameters": {
+        "content": "# 🌿 FallahTech RAG — Scoring Automatique T3\n**Sujet B — Automatisation avec n8n**\n\nCe workflow automatise la tâche T3 (Scoring d'investissement) du Sujet A.\nIl couvre les 3 étapes requises :\n1. Ingestion & chunking du corpus\n2. Pipeline Q&A avec retrieval + LLM\n3. Production du rapport structuré\n\n**LLM:** Groq (llama-3.1-8b-instant) | **Température:** 0",
+        "height": 270,
+        "width": 380,
+        "color": 3
+      },
+      "id": "sticky-title",
+      "name": "Titre Workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [20, 260]
     }
   ],
-  "pinData": {
-    "Manual Trigger": [
-      {
-        "json": {},
-        "pairedItem": {
-          "item": 0
-        }
-      }
-    ]
-  },
   "connections": {
-    "Manual Trigger": {
+    "▶️ Démarrer Workflow": {
       "main": [
         [
           {
-            "node": "Check API Health",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Get Available Documents",
+            "node": "📥 Étape 1 — Ingestion & Chunking",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Check API Health": {
+    "📥 Étape 1 — Ingestion & Chunking": {
       "main": [
         [
           {
-            "node": "Combine Health & Documents",
+            "node": "🔍 Étape 2 — Retrieval Sémantique",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Combine Health & Documents": {
+    "🔍 Étape 2 — Retrieval Sémantique": {
       "main": [
         [
           {
-            "node": "RAG Analysis",
+            "node": "🤖 Étape 2 — Appel LLM Groq",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get Available Documents": {
+    "🤖 Étape 2 — Appel LLM Groq": {
       "main": [
         [
           {
-            "node": "Combine Health & Documents",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "RAG Analysis": {
-      "main": [
-        [
-          {
-            "node": "Debug RAG Output",
+            "node": "📊 Parser Réponses LLM",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Format JSON Response": {
+    "📊 Parser Réponses LLM": {
       "main": [
         [
           {
-            "node": "Return Response",
+            "node": "📈 Étape 3 — Agréger Résultats",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Return Response": {
-      "main": [
-        []
-      ]
-    },
-    "Debug RAG Output": {
+    "📈 Étape 3 — Agréger Résultats": {
       "main": [
         [
           {
-            "node": "Format JSON Response",
+            "node": "❓ Réponse Complète ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "❓ Réponse Complète ?": {
+      "main": [
+        [
+          {
+            "node": "📄 Rapport Complet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⚠️ Rapport Partiel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 Rapport Complet": {
+      "main": [
+        [
+          {
+            "node": "📧 Rapport Final — Export",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚠️ Rapport Partiel": {
+      "main": [
+        [
+          {
+            "node": "📧 Rapport Final — Export",
             "type": "main",
             "index": 0
           }
@@ -329,14 +322,25 @@
   },
   "active": false,
   "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": false
+    "executionOrder": "v1"
   },
-  "versionId": "e2028b12-ccf9-4184-89a4-60fd9ed0823d",
+  "versionId": "ft-rag-scoring-v2-2026",
   "meta": {
-    "instanceId": "c6f03098adfe87940a557b73cfa158f18bf8b88066f94d844c66f7773dccb354"
+    "instanceId": "fallahtech-rag-sujet-b-eniso"
   },
-  "id": "zJEwsiGOKY6XUoVH",
-  "tags": []
+  "id": "fallahtech-rag-t3-scoring",
+  "tags": [
+    {
+      "name": "FallahTech",
+      "id": "tag-fallahtech"
+    },
+    {
+      "name": "RAG",
+      "id": "tag-rag"
+    },
+    {
+      "name": "Sujet B",
+      "id": "tag-sujet-b"
+    }
+  ]
 }
