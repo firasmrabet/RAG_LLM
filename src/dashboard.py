@@ -157,7 +157,7 @@ RÈGLES ABSOLUES:
 5. FallahTech = AgriTech, PAS télécommunications.
 6. Réponds en français professionnel."""
 
-MODELS = ["llama-3.1-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"]
+MODELS = ["llama-3.3-70b-versatile", "llama-3.1-70b-versatile", "llama-3.1-8b-instant", "gemma2-9b-it"]
 
 CRITERIA = [
     {"name": "Santé Financière", "icon": "📊", "weight": 0.40,
@@ -220,12 +220,13 @@ def llm(gc, sys, prompt, temp=0.1, mt=1000):
     last_err = "Erreur inconnue"
     for m in MODELS:
         try:
-            # Pause pour respecter le strict Rate Limit (TPM/RPM) de Groq
-            time.sleep(2.5)
+            # Plus de chunks = plus de tokens = sleep plus long pour éviter le rate limit
+            time.sleep(3.5)
             r = gc.chat.completions.create(model=m, messages=[{"role":"system","content":sys},{"role":"user","content":prompt}], temperature=temp, max_tokens=mt, top_p=0.9)
             return r.choices[0].message.content, m
         except Exception as e:
             last_err = str(e)
+            time.sleep(2.0)  # Pause supplémentaire avant de tenter le modèle suivant
             continue
     err_msg = f"SCORE: 6.0\nANALYSE: ⚠️ Échec de l'API (Rate Limit ou Modèles saturés). Détail technique : {last_err}"
     return err_msg, "error"
