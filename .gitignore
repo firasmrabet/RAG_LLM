@@ -4,3 +4,18 @@ __pycache__/
 *.pyc
 .streamlit/
 chroma_db/
+
+# Notebooks (ne pas pousser)
+*.ipynb
+.ipynb_checkpoints/
+
+# Exports générés
+*.json
+*.txt
+batch_qa_*.json
+scoring_fallahtech_*.json
+rapport_fallahtech_*.txt
+
+# Fichiers temporaires
+*.log
+.DS_Store
