@@ -302,9 +302,7 @@ ANALYSE:
             <div class="label">ANALYSE:</div><div class="analysis">{_esc(r['analysis'])}</div>
             <div class="label">SOURCES CITÉES</div><div class="src-chips">{sch}</div></div>""", unsafe_allow_html=True)
 
-        with st.expander(f"Voir le contexte RAG ({len(r['raw'])} chunks)", expanded=False):
-            for ch in r["raw"]:
-                st.text(f"📄 {ch['source']}: {ch['text']}...")
+
 
     # ── Synthèse & Décision ──
     final = round(sum(r["score"]*r["weight"] for r in results), 2)
@@ -437,8 +435,7 @@ FORMAT:
         </div>
     </div>""", unsafe_allow_html=True)
 
-    with st.expander(f"Voir le contexte brut récupéré ({len(raw)} chunks)"):
-        for ch in raw: st.text(f"📄 {ch['source']}: {ch['text']}...")
+
 
     st.download_button("📥 JSON", json.dumps({"question":q,"response":resp,"model":mdl,"chunks":nk,"timestamp":datetime.now().isoformat()}, indent=2, ensure_ascii=False), f"qa_{datetime.now():%Y%m%d_%H%M%S}.json")
 
